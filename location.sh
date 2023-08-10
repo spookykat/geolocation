@@ -2,8 +2,31 @@
 
 current_datetime=$(date +"%Y-%m-%d;%H:%M:%S;CEST")
 
+# Detect Operating System
+OS=$(uname)
+case $OS in
+  'Linux')
+    INTERFACE="wlan0"
+    ;;
+  'Darwin') # Darwin indicates macOS
+    INTERFACE=$(networksetup -listallhardwareports | grep -E '(Wi-Fi|AirPort)' -A 1 | grep -o "en.")
+    if [ -z "$INTERFACE" ]; then
+        echo "WiFi interface not found."
+        exit 1
+    fi
+    ;;
+  *)
+    echo "OS not supported."
+    exit 1
+    ;;
+esac
+
 # Scan for WiFi networks and get their MAC addresses
-result=$(sudo iw wlan0 scan | grep -oE '([a-fA-F0-9]{2}:){5}[a-fA-F0-9]{2}' | head -5)
+if [ "$OS" == "Linux" ]; then
+    result=$(sudo iw "$INTERFACE" scan | grep -oE '([a-fA-F0-9]{2}:){5}[a-fA-F0-9]{2}' | head -5)
+elif [ "$OS" == "Darwin" ]; then
+    result=$(sudo /System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -s | egrep -o '([a-f0-9]{2}:){5}[a-f0-9]{2}' | head -5)
+fi
 
 # Convert the result to comma-separated format
 formatted_result=$(echo "$result" | tr '\n' ',' | sed 's/,$//')
