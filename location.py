@@ -54,7 +54,7 @@ if OS == "Linux":
 elif OS == "Darwin":
     result = subprocess.check_output(["/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport", "-s"]).decode()
 
-mac_addresses = ','.join([match.group() for match in re.finditer(r'([a-fA-F0-9]{2}:){5}[a-fA-F0-9]{2}', result)][:5])
+mac_addresses = ','.join([match.group() for match in re.finditer(r'([a-fA-F0-9]{2}:){5}[a-fA-F0-9]{2}', result)][:10])
 
 print(mac_addresses)
 
